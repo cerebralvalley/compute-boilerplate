@@ -9,7 +9,7 @@ import asyncio
 app = FastAPI()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
+print(f"API Using Device: {device}")
 
 tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME).to(device)
