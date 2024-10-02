@@ -1,5 +1,5 @@
 # Cerebral Valley Compute Boilerplate
-Quick and easy endpoints to inference any Huggignface hosted LLM. Simply clone this repo, edit your config, and spin up an API!
+Turn any machine into a suite of inference and tuning endpoints for Huggingface LLMs. Simply clone this repo, edit your config, and spin up an API!
 
 # Steps to Run
 1. Clone this repository on the machine you're spinning up the API on.
