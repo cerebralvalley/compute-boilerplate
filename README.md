@@ -11,3 +11,8 @@ Quick and easy endpoints to inference any Huggignface hosted LLM. Simply clone t
 * Uses a CUDA GPU if it's available, otherwise defaults to the CPU
 * We assume an attention mask that allows all tokens to be attended to autoregressively!
     * Any other masking implementations, like sliding window, other other memory optimizations, are left as an exercise to the inferencer
+
+# TODOs:
+* Full API Features in accordance with [Llama Stack](https://github.com/meta-llama/llama-stack)
+* fine tuning support
+* .gguf support
