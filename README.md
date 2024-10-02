@@ -10,13 +10,20 @@ Quick and easy endpoints to inference any Huggignface hosted LLM. Simply clone t
 # Current Features
 * Inference any Huggingface LLM:
     * `/generate-stream`
-    * API endpoint that streams tokens back from your configured they are inferenced
+        * Endpoint that streams response tokens back
+    * `/generate`
+        * Endpoint that generates the response and returns it in the response, no streaming
+
+# Technical Default Implementations
+* Inference:
+    * We assume an attention mask that allows all tokens to be attended to autoregressively!
+        * Any other masking implementations, like sliding window, other other memory optimizations, are left as an exercise to the inferencer
+    * We cache attention keys and values 
+        * If you'd like to make memory optimizations, feel free to tinker with this or disable!
 
 # Other Notes and Considerations
 * There is a test function, `test.py`, for you to use locally and ensure your model is inferencing properly!
 * We use a CUDA GPU if it's available, otherwise defaults to the CPU
-* We assume an attention mask that allows all tokens to be attended to autoregressively!
-    * Any other masking implementations, like sliding window, other other memory optimizations, are left as an exercise to the inferencer
 
 # TODOs:
 * Full API Features in accordance with [Llama Stack](https://github.com/meta-llama/llama-stack)

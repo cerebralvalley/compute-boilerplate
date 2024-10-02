@@ -31,12 +31,41 @@ async def generate_text(request: Request):
                 
                 token_str = tokenizer.decode(token.item())
                 yield token_str
+
+                if token.item() == tokenizer.eos_token_id:
+                    break
                 
                 input_ids = token.unsqueeze(0)  # for one token, reassign input_ids to be tensor of shape (1, 1) via unsqueeze (dimension add) function
                 attention_mask = torch.cat([attention_mask, torch.ones_like(input_ids)], dim=-1)  # extend attention mask to include the new token
                 past = outputs.past_key_values
 
     return StreamingResponse(generate(), media_type="text/plain")
+
+@app.post("/generate")
+async def generate_text_full(request: Request):
+    data = await request.json()
+    input_text = data.get("text", "")
+
+    input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
+    attention_mask = torch.ones_like(input_ids).to(device)
+    
+    output_text = ""
+
+    for _ in range(Config.MAX_TOKENS):
+        with torch.no_grad():
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask, use_cache=True)
+            token = outputs.logits[:, -1, :].argmax(dim=-1).to(device)
+            
+            token_str = tokenizer.decode(token.item())
+            output_text += token_str
+
+            if token.item() == tokenizer.eos_token_id:
+                break
+            
+            input_ids = torch.cat([input_ids, token.unsqueeze(0)], dim=-1)
+            attention_mask = torch.cat([attention_mask, torch.ones((1, 1), device=device)], dim=-1)
+
+    return {"text": output_text}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=Config.PORT)
