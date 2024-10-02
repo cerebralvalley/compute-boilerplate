@@ -2,8 +2,10 @@
 Quick and easy endpoints to inference any Huggignface hosted LLM. Simply clone this repo, edit your config, and spin up an API!
 
 # Steps to Run
-1. Edit `constants.py` to your desired configuration.
-2. Run `python3 main.py` to download the model and start the endpoint.
+1. Clone this repository on the machine you're spinning up the API on.
+2. Install all dependencies with `pip3 install -r requirements.txt`.
+3. Edit `constants.py` to your desired configuration.
+4. Run `python3 main.py` to download the model and start the endpoint.
 
 # Features and Notes
 * This script spins up an API that streams tokens back from an LLM as they are inferenced
