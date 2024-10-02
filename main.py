@@ -31,7 +31,6 @@ async def generate_text(request: Request):
                 
                 token_str = tokenizer.decode(token.item())
                 yield token_str
-                await asyncio.sleep(0.1)
                 
                 input_ids = token.unsqueeze(0)  # for one token, reassign input_ids to be tensor of shape (1, 1) via unsqueeze (dimension add) function
                 attention_mask = torch.cat([attention_mask, torch.ones_like(input_ids)], dim=-1)  # extend attention mask to include the new token
