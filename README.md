@@ -5,7 +5,7 @@ Quick and easy endpoints to inference any Huggignface hosted LLM. Simply clone t
 1. Edit `constants.py` to your desired configuration.
 2. Run `python3 main.py` to download the model and start the endpoint.
 
-# Notes
+# Features and Notes
 * This script spins up an API that streams tokens back from an LLM as they are inferenced
 * There is a test function, `test.py`, for you to use locally and ensure your model is inferencing properly!
 * Uses a CUDA GPU if it's available, otherwise defaults to the CPU
