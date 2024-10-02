@@ -22,7 +22,7 @@ Quick and easy endpoints to inference any Huggignface hosted LLM. Simply clone t
         * If you'd like to make memory optimizations, feel free to tinker with this or disable!
 
 # Other Notes and Considerations
-* There is a test function, `test.py`, for you to use locally and ensure your model is inferencing properly!
+* You can inference each endpoint locally in `use.py` to ensure proper functionality and testing!
 * We use a CUDA GPU if it's available, otherwise defaults to the CPU
 
 # TODOs:
