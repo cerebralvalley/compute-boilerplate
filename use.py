@@ -34,5 +34,5 @@ def generate(text):
         print(response.text)
 
 if __name__ == "__main__":
-    # generate_stream()
+    # generate_stream("hello there")
     generate("I love")

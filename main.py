@@ -15,7 +15,10 @@ tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME).to(device)
 
 @app.post("/generate-stream")
-async def generate_text(request: Request):
+async def generate_stream(request: Request):
+    """
+    Generates a stream of response text.
+    """
     data = await request.json()
     input_text = data.get("text", "")
 
@@ -42,18 +45,22 @@ async def generate_text(request: Request):
     return StreamingResponse(generate(), media_type="text/plain")
 
 @app.post("/generate")
-async def generate_text_full(request: Request):
+async def generate(request: Request):
+    """
+    Generates response text in a block format.
+    """
     data = await request.json()
     input_text = data.get("text", "")
 
     input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
     attention_mask = torch.ones_like(input_ids).to(device)
+    past = None
     
     output_text = ""
 
     for _ in range(Config.MAX_TOKENS):
         with torch.no_grad():
-            outputs = model(input_ids=input_ids, attention_mask=attention_mask, use_cache=True)
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask, past_key_values=past, use_cache=True)
             token = outputs.logits[:, -1, :].argmax(dim=-1).to(device)
             
             token_str = tokenizer.decode(token.item())
@@ -62,8 +69,9 @@ async def generate_text_full(request: Request):
             if token.item() == tokenizer.eos_token_id:
                 break
             
-            input_ids = torch.cat([input_ids, token.unsqueeze(0)], dim=-1)
-            attention_mask = torch.cat([attention_mask, torch.ones((1, 1), device=device)], dim=-1)
+            input_ids = token.unsqueeze(0)
+            attention_mask = torch.cat([attention_mask, torch.ones_like(input_ids)], dim=-1)
+            past = outputs.past_key_values
 
     return {"text": output_text}
 
