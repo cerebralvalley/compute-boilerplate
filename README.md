@@ -15,14 +15,14 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
     * `/generate`
         * Endpoint that generates the response and returns it in the response, no streaming
 
-# Technical Default Implementations
+# Default Technical Implementations
 * Inference:
     * We assume an attention mask that allows all tokens to be attended to autoregressively!
         * Any other masking implementations, like sliding window, other other memory optimizations, are left as an exercise to the inferencer
     * We cache attention keys and values 
         * If you'd like to make memory optimizations, feel free to tinker with this or disable!
 
-# Other Notes and Considerations
+# Notes and Considerations
 * You can inference each endpoint locally in `use.py` to ensure proper functionality and testing!
 * We use a CUDA GPU if it's available, otherwise defaults to the CPU
 * In `scripts/setup/sh`, we've provided a script to setup and install all necessary dependencies
@@ -33,6 +33,7 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
     * If you run out of disk space on accident, huggingface downloads (on UNIX systems) to `~/.cache/huggingface/hub` that you can clear
 
 # SSH Commands
+If you're using a virtual machine, here are some helpful SSH commands to get you started.
 * Creating a Key:
   ```
   ssh-keygen -t ed25519
