@@ -4,3 +4,5 @@ fastapi
 uvicorn
 requests
 psutil
+python-dotenv
+huggingface_hub

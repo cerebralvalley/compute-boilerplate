@@ -26,6 +26,7 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
 * You can inference each endpoint locally in `use.py` to ensure proper functionality and testing!
 * We use a CUDA GPU if it's available, otherwise defaults to the CPU
 * In `scripts/setup/sh`, we've provided a script to setup and install all necessary dependencies
+* Some models require an agreement or signature to access. For these models, please sign the access documents on the model's page, and then input your Huggingface Access Token in `.env` to override this
 
 # SSH Commands
 * Creating a Key:

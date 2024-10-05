@@ -6,6 +6,7 @@ import uvicorn
 from config import Config
 from utils import check_system_resources
 import sys
+from huggingface_hub import login
 
 app = FastAPI()
 
@@ -16,8 +17,13 @@ if not check_system_resources(Config.MODEL_NAME):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"API Using Device: {device}")
 
-tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME).to(device)
+if (Config.HUGGINGFACE_ACCESS_TOKEN):
+    login(token=Config.HUGGINGFACE_ACCESS_TOKEN)
+    tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME, use_auth_token=True)
+    model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME, use_auth_token=True).to(device) 
+else:
+    tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME)
+    model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME).to(device)
 
 @app.post("/generate-stream")
 async def generate_stream(request: Request):
