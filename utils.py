@@ -4,6 +4,22 @@ from transformers import AutoModelForCausalLM
 import shutil
 from huggingface_hub import model_info, login
 from config import Config
+import json
+from enum import Enum
+from pydantic import BaseModel
+
+class EnumEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return obj.value
+        return super().default(obj)
+
+def serialize(request: BaseModel) -> str:
+    """
+    Turns a pydantic model (request param) into serialized JSON string format.
+    Uses the EnumEncoder class to get the value of the Enum so we can model dump without error.
+    """
+    return json.dumps(request.model_dump(), cls=EnumEncoder)
 
 def estimate_model_size(model_name):
     """

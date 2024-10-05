@@ -10,11 +10,14 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
 6. Run `python3 main.py` to download the model and start the endpoint (*NOTE: downloading the LLM, depending on the size, may take a while*).
 
 # Current Features
+* Fully compatible with the [Llama Stack](https://github.com/meta-llama/llama-stack)!
 * Inference any Huggingface LLM:
-    * `/generate-stream`
-        * Endpoint that streams response tokens back
-    * `/generate`
-        * Endpoint that generates the response and returns it in the response, no streaming
+    * `/inference/completion`
+        * Endpoint that generates a completion response
+        * Supports both streaming and non-streaming modes
+    * `/inference/chat_completion`
+        * Endpoint that generates a chat completion response
+        * Supports both streaming and non-streaming modes
 
 # Default Technical Implementations
 * Inference:
@@ -53,7 +56,11 @@ If you're using a virtual machine, here are some helpful SSH commands to get you
 
 Note: Replace `/path/to/your/keys/folder/KEY_NAME`, `username`, and `server_ip` with your actual values.
 
+# Bug and Fix Log
+* `json.decoder.JSONDecodeError: Extra data: line 1 column 55 (char 54)` error on reading of a stream
+  * This is because there is no deliminattion between stream chunks
+  * To fix this, we add a bytestring `b'\n'` to the end of the yielded chunk in the API
+
 # TODOs:
-* Full API Features in accordance with [Llama Stack](https://github.com/meta-llama/llama-stack)
 * fine tuning support
 * .gguf support

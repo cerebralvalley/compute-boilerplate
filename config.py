@@ -8,4 +8,3 @@ class Config:
     PORT: int = 8000
     MAX_TOKENS: int = 100
     HUGGINGFACE_ACCESS_TOKEN: str = os.getenv("HUGGINGFACE_ACCESS_TOKEN", "")
-    
