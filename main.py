@@ -34,7 +34,7 @@ model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME, use_auth_token=u
 
 async def generate_tokens(input_text: str, max_tokens: int) -> AsyncGenerator[str, None]:
     """
-    Returns an async generator that just streams tokens from the LLM as they come. The actual logic for inferncing the model is defined here
+    Returns an async generator that just streams tokens from your Huggingface LLM as they come. The actual logic for inferncing the model is defined here.
     """
     input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
     attention_mask = torch.ones_like(input_ids).to(device)
