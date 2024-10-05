@@ -32,9 +32,12 @@ use_auth = bool(Config.HUGGINGFACE_ACCESS_TOKEN)
 tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME, use_auth_token=use_auth)
 model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME, use_auth_token=use_auth).to(device)
 
-async def generate_tokens(input_text: str, max_tokens: int) -> AsyncGenerator[str, None]:
+async def generate_tokens(input_text: str, max_tokens: int, temperature: float) -> AsyncGenerator[str, None]:
     """
-    Returns an async generator that just streams tokens from your Huggingface LLM as they come. The actual logic for inferncing the model is defined here.
+    Returns an async generator that just streams tokens from your Huggingface LLM as they come. T
+    he actual logic for inferncing the model is defined here.
+    Temperature is used to edit the next token selection by editing the probability distribution.
+    Temperature of 0 means we just take the highest probability next token.
     """
     input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
     attention_mask = torch.ones_like(input_ids).to(device)
@@ -43,7 +46,15 @@ async def generate_tokens(input_text: str, max_tokens: int) -> AsyncGenerator[st
     for _ in range(max_tokens):
         with torch.no_grad():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask, past_key_values=past, use_cache=True)
-            token = outputs.logits[:, -1, :].argmax(dim=-1).to(device)
+            logits = outputs.logits[:, -1, :]  # logits typically output from last layer, softmax left to the reader
+            
+            if temperature == 0:
+                probs = torch.softmax(logits, dim=-1)
+                token = probs.argmax(dim=-1)
+            else:
+                scaled_logits = logits / temperature
+                probs = torch.softmax(scaled_logits, dim=-1)
+                token = torch.multinomial(probs, num_samples=1).squeeze(-1)
             
             token_str = tokenizer.decode(token.item())
             yield token_str
@@ -63,16 +74,17 @@ async def completion(
     Inferences standard completion with your defined huggingface model.
     """
     input_text = interleaved_text_media_as_str(request.content)
-    max_tokens = min(request.sampling_params.max_tokens or float('inf'), Config.MAX_TOKENS)
+    max_tokens = min(request.sampling_params.max_tokens or float('inf'), Config.DEFAULT_MAX_TOKENS)
+    temperature = request.sampling_params.temperature or Config.DEFAULT_TEMPERATURE
 
     if request.stream:
         async def stream_generator():
-            async for token in generate_tokens(input_text, max_tokens):
+            async for token in generate_tokens(input_text, max_tokens, temperature):
                 yield serialize(CompletionResponseStreamChunk(delta=token)).encode('utf-8') + b'\n'
         return StreamingResponse(stream_generator(), media_type="application/json")
     else:
         output_text = ""
-        async for token in generate_tokens(input_text, max_tokens):
+        async for token in generate_tokens(input_text, max_tokens, temperature):
             output_text += token
         return CompletionResponse(completion_message={
             "content": output_text,
@@ -87,16 +99,17 @@ async def chat_completion(
     Inferences chat completion using your defined Huggingface model.
     """
     input_text = "\n".join([f"{m.role}: {interleaved_text_media_as_str(m.content)}" for m in request.messages])
-    max_tokens = min(request.sampling_params.max_tokens or float('inf'), Config.MAX_TOKENS)
+    max_tokens = min(request.sampling_params.max_tokens or float('inf'), Config.DEFAULT_MAX_TOKENS)
+    temperature = request.sampling_params.temperature or Config.DEFAULT_TEMPERATURE
 
     if request.stream:
         async def stream_generator():
-            async for token in generate_tokens(input_text, max_tokens):
+            async for token in generate_tokens(input_text, max_tokens, temperature):
                 yield serialize(ChatCompletionResponseStreamChunk(event={"event_type": "progress", "delta": token})).encode('utf-8') + b'\n'
         return StreamingResponse(stream_generator(), media_type="application/json")
     else:
         output_text = ""
-        async for token in generate_tokens(input_text, max_tokens):
+        async for token in generate_tokens(input_text, max_tokens, temperature):
             output_text += token
         return ChatCompletionResponse(completion_message={
             "role": "assistant",

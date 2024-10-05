@@ -17,7 +17,7 @@ def completion_stream(content, max_tokens=None):
     request = CompletionRequest(
         model=Config.MODEL_NAME,
         content=content,
-        sampling_params=SamplingParams(max_tokens=max_tokens or Config.MAX_TOKENS).model_dump(),
+        sampling_params=SamplingParams(max_tokens=max_tokens or Config.DEFAULT_MAX_TOKENS).model_dump(),
         stream=True
     )
     
@@ -52,7 +52,7 @@ def completion(content, max_tokens=None):
     request = CompletionRequest(
         model=Config.MODEL_NAME,
         content=content,
-        sampling_params=SamplingParams(max_tokens=max_tokens or Config.MAX_TOKENS).model_dump(),
+        sampling_params=SamplingParams(max_tokens=max_tokens or Config.DEFAULT_MAX_TOKENS).model_dump(),
         stream=False
     )
     
@@ -73,7 +73,7 @@ def chat_completion_stream(messages, max_tokens=None):
     request = ChatCompletionRequest(
         model=Config.MODEL_NAME,
         messages=messages,
-        sampling_params=SamplingParams(max_tokens=max_tokens or Config.MAX_TOKENS).model_dump(),
+        sampling_params=SamplingParams(max_tokens=max_tokens or Config.DEFAULT_MAX_TOKENS).model_dump(),
         stream=True
     )
     
@@ -108,7 +108,7 @@ def chat_completion(messages, max_tokens=None):
     request = ChatCompletionRequest(
         model=Config.MODEL_NAME,
         messages=messages,
-        sampling_params=SamplingParams(max_tokens=max_tokens or Config.MAX_TOKENS).model_dump(),
+        sampling_params=SamplingParams(max_tokens=max_tokens or Config.DEFAULT_MAX_TOKENS).model_dump(),
         stream=False
     )
     
@@ -125,6 +125,6 @@ def chat_completion(messages, max_tokens=None):
 
 if __name__ == "__main__":
     completion_stream("Hello, how are you?")
-    completion("What is the capital of France?")
-    chat_completion_stream([{"role": "user", "content": "What's the capital of France?"}])
-    chat_completion([{"role": "user", "content": "What's the weather like today?"}])
+    # completion("What is the capital of France?")
+    # chat_completion_stream([{"role": "user", "content": "What's the capital of France?"}])
+    # chat_completion([{"role": "user", "content": "What's the weather like today?"}])
