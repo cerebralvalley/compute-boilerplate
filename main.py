@@ -25,7 +25,8 @@ check_system_resources(Config.MODEL_NAME)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"API Using Device: {device}")
 
-login(token=Config.HUGGINGFACE_ACCESS_TOKEN) if Config.HUGGINGFACE_ACCESS_TOKEN else None
+if Config.HUGGINGFACE_ACCESS_TOKEN:
+    login(token=Config.HUGGINGFACE_ACCESS_TOKEN)
 use_auth = bool(Config.HUGGINGFACE_ACCESS_TOKEN)
 
 tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME, use_auth_token=use_auth)

@@ -26,7 +26,9 @@ def estimate_model_size(model_name):
     Estimates the model size with the model's name, considering different precisions.
     Uses the model's configuration file to get the number of parameters.
     """    
-    login(token=Config.HUGGINGFACE_ACCESS_TOKEN)
+    if Config.HUGGINGFACE_ACCESS_TOKEN:
+        login(token=Config.HUGGINGFACE_ACCESS_TOKEN)
+
     info = model_info(model_name)
     tensor_params = info.safetensors.parameters
     total_bytes = 0
