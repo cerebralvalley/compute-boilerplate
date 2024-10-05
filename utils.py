@@ -76,6 +76,7 @@ def get_available_disk_space():
 def check_system_resources(model_name):
     """
     Checks the model size against system parameters, with or without GPU, and disk space.
+    Actually calculates the size of the model after the estimate check by looping through each downloaded parameter.
     Raises an error if the model won't fit in memory or if there's not enough disk space.
     """
     print("\n" + "=" * 50)
