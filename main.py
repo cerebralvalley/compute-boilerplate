@@ -5,10 +5,13 @@ import torch
 import uvicorn
 from config import Config
 from utils import check_system_resources
+import sys
 
 app = FastAPI()
 
-check_system_resources(Config.MODEL_NAME)
+if not check_system_resources(Config.MODEL_NAME):
+    print("Error: The model won't fit in available memory. Aborting.")
+    sys.exit(1)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"API Using Device: {device}")

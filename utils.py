@@ -24,9 +24,9 @@ def estimate_model_size(model) -> float:
     
     return total_size / (1024 ** 3)
 
-def check_system_resources(model_name):
+def check_system_resources(model_name) -> bool:
     """
-    Checks the model size against system parameter, with or without GPU. 
+    Checks the model size against system parameter, with or without GPU. Returns a boolean if the model will fit in memory or not.
     """
     print("\n" + "=" * 50)
     print(f"System Resource Check for Model: {model_name}")
@@ -49,8 +49,10 @@ def check_system_resources(model_name):
         
         if model_size > available_memory:
             print("  - WARNING: The model may not fit in GPU memory!")
+            will_fit = False
         else:
             print("  - The model should fit in GPU memory.")
+            will_fit = True
     else:
         available_memory = psutil.virtual_memory().available / (1024 ** 3)
         
@@ -60,10 +62,14 @@ def check_system_resources(model_name):
         
         if model_size > available_memory:
             print("  - WARNING: The model may not fit in system memory!")
+            will_fit = False
         else:
             print("  - The model SHOULD fit in system memory.")
+            will_fit = True
 
     print("\nMemory Requirement:")
     print(f"  - Required: {model_size:.2f} GB")
     print(f"  - Available: {available_memory:.2f} GB")
     print("=" * 50 + "\n")
+
+    return will_fit
