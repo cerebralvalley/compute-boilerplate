@@ -4,8 +4,9 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
 # Steps to Run
 1. Clone this repository on the machine you're spinning up the API on.
 2. Install all dependencies with `pip3 install -r requirements.txt`.
-3. Edit `constants.py` to your desired configuration.
-4. Run `python3 main.py` to download the model and start the endpoint (*NOTE: downloading the LLM, depending on the size, may take a while*).
+3. Edit `config.py` to your desired configuration.
+4. Ensure that the API's port is open on your machine. If you're running on a Nebius machine, this port should already be open. If you're running on AWS, you will need to manually whitelist the port. 
+5. Run `python3 main.py` to download the model and start the endpoint (*NOTE: downloading the LLM, depending on the size, may take a while*).
 
 # Current Features
 * Inference any Huggingface LLM:
@@ -24,6 +25,26 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
 # Other Notes and Considerations
 * You can inference each endpoint locally in `use.py` to ensure proper functionality and testing!
 * We use a CUDA GPU if it's available, otherwise defaults to the CPU
+* In `scripts/setup/sh`, we've provided a script to setup and install all necessary dependencies
+
+# SSH Commands
+* Creating a Key:
+  ```
+  ssh-keygen -t ed25519
+  ```
+  Folder: `/path/to/your/keys/folder/KEY_NAME`
+
+* Copying the public key:
+  ```
+  cat /path/to/your/keys/folder/KEY_NAME.pub
+  ```
+
+* Connecting to the server:
+  ```
+  ssh -i /path/to/your/keys/folder/KEY_NAME <USERNAME>@<SERVER_IP>
+  ```
+
+Note: Replace `/path/to/your/keys/folder/KEY_NAME`, `username`, and `server_ip` with your actual values.
 
 # TODOs:
 * Full API Features in accordance with [Llama Stack](https://github.com/meta-llama/llama-stack)

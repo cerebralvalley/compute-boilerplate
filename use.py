@@ -1,8 +1,11 @@
 import requests
-from constants import Config
+from config import Config
+
+# default_url = f"http://localhost:{Config.PORT}"
+default_url = f"http://195.242.17.37:${Config.PORT}"
 
 def generate_stream(text):
-    url = f"http://localhost:{Config.PORT}/generate-stream"
+    url = f"{default_url}/generate-stream"
     
     response = requests.post(url, json={"text": text}, stream=True)
     
@@ -20,7 +23,7 @@ def generate_stream(text):
         print(response.text)
 
 def generate(text):
-    url = f"http://localhost:{Config.PORT}/generate"
+    url = f"{default_url}/generate"
     
     response = requests.post(url, json={"text": text})
     
@@ -34,5 +37,5 @@ def generate(text):
         print(response.text)
 
 if __name__ == "__main__":
-    # generate_stream("hello there")
-    generate("I love")
+    generate_stream("hello there")
+    # generate("I love")

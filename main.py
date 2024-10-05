@@ -3,8 +3,7 @@ from fastapi.responses import StreamingResponse
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import uvicorn
-from constants import Config
-import asyncio
+from config import Config
 
 app = FastAPI()
 
