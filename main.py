@@ -4,8 +4,11 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import uvicorn
 from config import Config
+from utils import check_system_resources
 
 app = FastAPI()
+
+check_system_resources(Config.MODEL_NAME)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"API Using Device: {device}")
