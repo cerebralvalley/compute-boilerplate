@@ -36,8 +36,6 @@ async def generate_tokens(input_text: str, max_tokens: int, temperature: float) 
     """
     Returns an async generator that streams tokens from your Huggingface LLM as they come.
     The actual logic for inferencing the model is defined here.
-    Temperature is used to adjust the probability distribution for next token selection.
-    Temperature of 1.0 keeps the original distribution, < 1.0 makes it more peaked, > 1.0 makes it more uniform.
     """
     input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
     attention_mask = torch.ones_like(input_ids).to(device)

@@ -27,6 +27,8 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
     * We cache attention keys and values 
         * If you'd like to make memory optimizations, feel free to tinker with this or disable!
     * The default temperature is set to 1, meaning we just select the highest probability token without any distribution adjustment. If any other temperature is set, we apply the temperature to the logits then sample from the resulting softmax distribution
+      * FYI, temperature is used to adjust the probability distribution for next token selection.
+      * Temperature of 1.0 keeps the original distribution, < 1.0 makes it more peaked, > 1.0 makes it more uniform.
 
 # Notes and Considerations
 * You can inference each endpoint locally in `use.py` to ensure proper functionality and testing!
