@@ -65,4 +65,4 @@ Note: Replace `/path/to/your/keys/folder/KEY_NAME`, `username`, and `server_ip` 
 # TODOs:
 * fine tuning support
 * .gguf support
-* Add full llama stack support, make the values in the types actually do shit (like temp)
+* Add full llama stack support, make the values in the types actually do stuff (like temp)
