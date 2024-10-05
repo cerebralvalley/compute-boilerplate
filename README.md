@@ -10,6 +10,7 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
 6. Run `python3 main.py` to download the model and start the endpoint (*NOTE: downloading the LLM, depending on the size, may take a while*).
 
 # Current Features
+* Checks disk size, vRAM, and RAM for model compatibility
 * Fully compatible with the [Llama Stack](https://github.com/meta-llama/llama-stack)!
 * Inference any Huggingface LLM:
     * `/inference/completion`
