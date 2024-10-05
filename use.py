@@ -25,7 +25,7 @@ def generate_stream(text):
         
         duration = end_time - start_time
         tokens_per_second = token_count / duration if duration > 0 else 0
-        print(f"\nTPS: {tokens_per_second:.2f}")
+        print(f"\nTokens Per Second (TPS): {tokens_per_second:.2f}")
     else:
         print(f"Error: {response.status_code}")
         print(response.text)

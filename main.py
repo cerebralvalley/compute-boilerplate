@@ -5,14 +5,11 @@ import torch
 import uvicorn
 from config import Config
 from utils import check_system_resources
-import sys
 from huggingface_hub import login
 
 app = FastAPI()
 
-if not check_system_resources(Config.MODEL_NAME):
-    print("Error: not enough memory or disk space for model. Aborting.")
-    sys.exit(1)
+check_system_resources(Config.MODEL_NAME)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"API Using Device: {device}")

@@ -61,10 +61,10 @@ def get_available_disk_space():
     _, _, free = shutil.disk_usage("/")
     return free // (2**30)
 
-def check_system_resources(model_name) -> bool:
+def check_system_resources(model_name):
     """
     Checks the model size against system parameters, with or without GPU, and disk space.
-    Returns a boolean if the model will fit in memory and if there's enough disk space.
+    Raises an error if the model won't fit in memory or if there's not enough disk space.
     """
     print("\n" + "=" * 50)
     print(f"System Resource Check for Model: {model_name}")
@@ -92,22 +92,18 @@ def check_system_resources(model_name) -> bool:
         print(f"  - Available GPU memory: {available_vram:.2f} GB")
         
         if model_size > available_vram:
-            print("  - WARNING: The model may not fit in GPU memory!")
-            will_fit_memory = False
+            raise ValueError(f"The model size ({model_size:.2f} GB) exceeds available GPU memory ({available_vram:.2f} GB).")
         else:
             print("  - The model should fit in GPU memory.")
-            will_fit_memory = True
     else:
         print("\nCPU Information:")
         print("  - CUDA is not available. Using CPU.")
         print(f"  - Available system memory: {available_memory:.2f} GB")
         
         if model_size > available_memory:
-            print("  - WARNING: The model may not fit in system memory!")
-            will_fit_memory = False
+            raise ValueError(f"The model size ({model_size:.2f} GB) exceeds available system memory ({available_memory:.2f} GB).")
         else:
-            print("  - The model SHOULD fit in system memory.")
-            will_fit_memory = True
+            print("  - The model should fit in system memory.")
 
     print("\nMemory Requirement:")
     print(f"  - Required: {model_size:.2f} GB")
@@ -118,12 +114,8 @@ def check_system_resources(model_name) -> bool:
     print(f"  - Required: {model_size:.2f} GB")
 
     if available_disk_space < model_size:
-        print("  - WARNING: Not enough disk space to store the model!")
-        will_fit_disk = False
+        raise ValueError(f"Not enough disk space to store the model. Required: {model_size:.2f} GB, Available: {available_disk_space:.2f} GB")
     else:
         print("  - Sufficient disk space available.")
-        will_fit_disk = True
 
     print("=" * 50 + "\n")
-
-    return will_fit_memory and will_fit_disk
