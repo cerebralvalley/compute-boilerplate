@@ -11,7 +11,7 @@ from huggingface_hub import login
 app = FastAPI()
 
 if not check_system_resources(Config.MODEL_NAME):
-    print("Error: The model won't fit in available memory. Aborting.")
+    print("Error: not enough memory or disk space for model. Aborting.")
     sys.exit(1)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

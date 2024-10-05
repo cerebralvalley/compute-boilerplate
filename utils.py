@@ -1,6 +1,8 @@
 import torch
 import psutil
+import os
 from transformers import AutoModelForCausalLM
+import shutil
 
 def estimate_model_size(model) -> float:
     """
@@ -26,7 +28,8 @@ def estimate_model_size(model) -> float:
 
 def check_system_resources(model_name) -> bool:
     """
-    Checks the model size against system parameter, with or without GPU. Returns a boolean if the model will fit in memory or not.
+    Checks the model size against system parameters, with or without GPU, and disk space.
+    Returns a boolean if the model will fit in memory and if there's enough disk space.
     """
     print("\n" + "=" * 50)
     print(f"System Resource Check for Model: {model_name}")
@@ -40,6 +43,7 @@ def check_system_resources(model_name) -> bool:
 
     print(f"Actual model size: {model_size:.2f} GB")
 
+    will_fit_memory = True
     if torch.cuda.is_available():
         available_memory = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)
         available_memory -= (torch.cuda.memory_reserved(0) + torch.cuda.memory_allocated(0)) / (1024 ** 3)
@@ -49,10 +53,9 @@ def check_system_resources(model_name) -> bool:
         
         if model_size > available_memory:
             print("  - WARNING: The model may not fit in GPU memory!")
-            will_fit = False
+            will_fit_memory = False
         else:
             print("  - The model should fit in GPU memory.")
-            will_fit = True
     else:
         available_memory = psutil.virtual_memory().available / (1024 ** 3)
         
@@ -62,14 +65,27 @@ def check_system_resources(model_name) -> bool:
         
         if model_size > available_memory:
             print("  - WARNING: The model may not fit in system memory!")
-            will_fit = False
+            will_fit_memory = False
         else:
             print("  - The model SHOULD fit in system memory.")
-            will_fit = True
 
     print("\nMemory Requirement:")
     print(f"  - Required: {model_size:.2f} GB")
     print(f"  - Available: {available_memory:.2f} GB")
+
+    _, _, free = shutil.disk_usage("/")
+    free_space_gb = free // (2**30)
+    print("\nDisk Space:")
+    print(f"  - Available: {free_space_gb:.2f} GB")
+    print(f"  - Required: {model_size:.2f} GB")
+
+    if free_space_gb < model_size:
+        print("  - WARNING: Not enough disk space to store the model!")
+        will_fit_disk = False
+    else:
+        print("  - Sufficient disk space available.")
+        will_fit_disk = True
+
     print("=" * 50 + "\n")
 
-    return will_fit
+    return will_fit_memory and will_fit_disk
