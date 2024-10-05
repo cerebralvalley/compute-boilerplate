@@ -62,7 +62,7 @@ Note: Replace `/path/to/your/keys/folder/KEY_NAME`, `username`, and `server_ip` 
 
 # Bug and Fix Log
 * `json.decoder.JSONDecodeError: Extra data: line 1 column 55 (char 54)` error on reading of a stream
-  * This is because there is no deliminattion between stream chunks
+  * This is because there is no deliminattion between stream chunks (we are using `requests` `read_lines()` function, which auto separates a streamed response by `\n`)
   * To fix this, we add a bytestring `b'\n'` to the end of the yielded chunk in the API
 
 # TODOs:
