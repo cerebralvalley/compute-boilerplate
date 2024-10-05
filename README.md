@@ -27,6 +27,8 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
 * We use a CUDA GPU if it's available, otherwise defaults to the CPU
 * In `scripts/setup/sh`, we've provided a script to setup and install all necessary dependencies
 * Some models require an agreement or signature to access. For these models, please sign the access documents on the model's page, and then input your Huggingface Access Token in `.env` to override this
+* To download and inference models, we need BOTH sufficient *disk* and *memory* spaec
+    * Huggingface first downloads the weights to disk in a cache folder, which is then loaded into memory upon inference with the `.to(device)` function
 
 # SSH Commands
 * Creating a Key:
