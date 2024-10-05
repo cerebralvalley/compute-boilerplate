@@ -2,18 +2,30 @@ import torch
 import psutil
 from transformers import AutoModelForCausalLM
 import shutil
-from huggingface_hub import model_info
+from huggingface_hub import model_info, login
+from config import Config
 
 def estimate_model_size(model_name):
     """
-    Estimates the model size with the model's name, assuming full (32 bit) precision.
+    Estimates the model size with the model's name, considering different precisions.
     Uses the model's configuration file to get the number of parameters.
     """    
+    login(token=Config.HUGGINGFACE_ACCESS_TOKEN)
     info = model_info(model_name)
     tensor_params = info.safetensors.parameters
-    num_parameters = sum(tensor_params.values())  # sum all values in the dictionary, regardless of precision
-    estimated_size_bytes = num_parameters * 4  # assume 4 bytes per parameter (32-bit float)
-    estimated_size_gb = estimated_size_bytes / (1024 ** 3)
+    total_bytes = 0
+    for key, value in tensor_params.items():
+        if '32' in key:
+            total_bytes += value * 4  # 32-bit float
+        elif '16' in key:
+            total_bytes += value * 2  # 16-bit float
+        elif '8' in key:
+            total_bytes += value  # 8-bit integer
+        elif '4' in key:
+            total_bytes += value / 2  # 4-bit integer
+        else:
+            total_bytes += value * 4  # default to 32-bit float if precision is not specified
+    estimated_size_gb = total_bytes / (1024 ** 3)
     return estimated_size_gb
 
 def calculate_model_size(model) -> float:
@@ -70,11 +82,18 @@ def check_system_resources(model_name):
     print(f"System Resource Check for Model: {model_name}")
     print("=" * 50)
 
-    estimated_size = estimate_model_size(model_name)
+    estimated_size = estimate_model_size(model_name)  # estimate the model's size before actually downloading it
     available_disk_space = get_available_disk_space()
+    available_vram = get_available_vram()
+    available_memory = get_available_memory()
 
     if estimated_size > available_disk_space:
         raise ValueError(f"Estimated model size ({estimated_size:.2f} GB) exceeds available disk space ({available_disk_space:.2f} GB). Refusing to download model.")
+
+    if available_vram > 0 and estimated_size > available_vram:
+        raise ValueError(f"Estimated model size ({estimated_size:.2f} GB) exceeds available GPU memory ({available_vram:.2f} GB). Refusing to download model.")
+    elif available_vram == 0 and estimated_size > available_memory:
+        raise ValueError(f"Estimated model size ({estimated_size:.2f} GB) exceeds available system memory ({available_memory:.2f} GB). Refusing to download model.")
 
     model = AutoModelForCausalLM.from_pretrained(model_name)
     model_size = calculate_model_size(model)
@@ -83,9 +102,6 @@ def check_system_resources(model_name):
     torch.cuda.empty_cache()
 
     print(f"Actual model size: {model_size:.2f} GB")
-
-    available_vram = get_available_vram()
-    available_memory = get_available_memory()
 
     if available_vram > 0:
         print("\nGPU Information:")
