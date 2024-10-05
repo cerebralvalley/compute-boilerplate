@@ -55,7 +55,7 @@ async def completion(
                     token_str = tokenizer.decode(token.item())
                     yield serialize(CompletionResponseStreamChunk(delta=token_str)).encode('utf-8') + b'\n'
 
-                    if token.item() == tokenizer.eos_token_id:
+                    if token.item() == tokenizer.eos_token:
                         break
                     
                     input_ids = token.unsqueeze(0)
@@ -78,7 +78,7 @@ async def completion(
                 token_str = tokenizer.decode(token.item())
                 output_text += token_str
 
-                if token.item() == tokenizer.eos_token_id:
+                if token.item() == tokenizer.eos_token:
                     break
                 
                 input_ids = token.unsqueeze(0)
@@ -114,7 +114,7 @@ async def chat_completion(
                     token_str = tokenizer.decode(token.item())
                     yield serialize(ChatCompletionResponseStreamChunk(event={"event_type": "progress", "delta": token_str})).encode('utf-8') + b'\n'
 
-                    if token.item() == tokenizer.eos_token_id:
+                    if token.item() == tokenizer.eos_token:
                         break
                     
                     input_ids = token.unsqueeze(0)
@@ -137,7 +137,7 @@ async def chat_completion(
                 token_str = tokenizer.decode(token.item())
                 output_text += token_str
 
-                if token.item() == tokenizer.eos_token_id:
+                if token.item() == tokenizer.eos_token:
                     break
                 
                 input_ids = token.unsqueeze(0)
