@@ -34,10 +34,10 @@ model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME, use_auth_token=u
 
 async def generate_tokens(input_text: str, max_tokens: int, temperature: float) -> AsyncGenerator[str, None]:
     """
-    Returns an async generator that just streams tokens from your Huggingface LLM as they come. T
-    he actual logic for inferncing the model is defined here.
-    Temperature is used to edit the next token selection by editing the probability distribution.
-    Temperature of 0 means we just take the highest probability next token.
+    Returns an async generator that streams tokens from your Huggingface LLM as they come.
+    The actual logic for inferencing the model is defined here.
+    Temperature is used to adjust the probability distribution for next token selection.
+    Temperature of 1.0 keeps the original distribution, < 1.0 makes it more peaked, > 1.0 makes it more uniform.
     """
     input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
     attention_mask = torch.ones_like(input_ids).to(device)
@@ -46,15 +46,11 @@ async def generate_tokens(input_text: str, max_tokens: int, temperature: float) 
     for _ in range(max_tokens):
         with torch.no_grad():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask, past_key_values=past, use_cache=True)
-            logits = outputs.logits[:, -1, :]  # logits typically output from last layer, softmax left to the reader
-            
-            if temperature == 0:
-                probs = torch.softmax(logits, dim=-1)
-                token = probs.argmax(dim=-1)
-            else:
-                scaled_logits = logits / temperature
-                probs = torch.softmax(scaled_logits, dim=-1)
-                token = torch.multinomial(probs, num_samples=1).squeeze(-1)
+            logits = outputs.logits[:, -1, :]
+    
+            scaled_logits = logits / max(temperature, 1e-8)
+            probs = torch.softmax(scaled_logits, dim=-1)
+            token = torch.multinomial(probs, num_samples=1).squeeze(-1)
             
             token_str = tokenizer.decode(token.item())
             yield token_str
