@@ -6,3 +6,4 @@ requests
 psutil
 python-dotenv
 huggingface_hub
+llama-stack
