@@ -1,7 +1,6 @@
 import torch
 import psutil
 from transformers import AutoModelForCausalLM
-from config import Config
 
 def estimate_model_size(model) -> float:
     """
@@ -15,9 +14,11 @@ def estimate_model_size(model) -> float:
             bits = 16
         elif param.dtype == torch.int8:
             bits = 8
+        elif param.dtype == torch.int4:
+            bits = 4
         else:
-            print("dtype not detected. Falling back to quanitzation bits config...")
-            bits = Config.QUANTIZATION_BITS  # fallback to config
+            print("dtype not detected. Falling back to full precision...")
+            bits = 32
 
         total_size += param.numel() * (bits / 8)
     
@@ -37,7 +38,7 @@ def check_system_resources(model_name):
     del model
     torch.cuda.empty_cache()
 
-    print(f"Actual model size with {Config.QUANTIZATION_BITS}-bit precision: {model_size:.2f} GB")
+    print(f"Actual model size: {model_size:.2f} GB")
 
     if torch.cuda.is_available():
         available_memory = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)

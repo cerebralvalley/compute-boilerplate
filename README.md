@@ -26,8 +26,6 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
 * You can inference each endpoint locally in `use.py` to ensure proper functionality and testing!
 * We use a CUDA GPU if it's available, otherwise defaults to the CPU
 * In `scripts/setup/sh`, we've provided a script to setup and install all necessary dependencies
-* For the `Config` parameter `QUANTIZATION_BITS`: this is only used to calculate the model's size, and must be manually input for an accurate estimate
-    * First, we attempt to estimate the model's size from Pytorch, and if we can't, then we fallback to this parameter
 
 # SSH Commands
 * Creating a Key:
