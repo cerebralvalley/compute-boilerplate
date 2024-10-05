@@ -17,13 +17,11 @@ if not check_system_resources(Config.MODEL_NAME):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"API Using Device: {device}")
 
-if (Config.HUGGINGFACE_ACCESS_TOKEN):
-    login(token=Config.HUGGINGFACE_ACCESS_TOKEN)
-    tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME, use_auth_token=True)
-    model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME, use_auth_token=True).to(device) 
-else:
-    tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME)
-    model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME).to(device)
+login(token=Config.HUGGINGFACE_ACCESS_TOKEN) if Config.HUGGINGFACE_ACCESS_TOKEN else None
+use_auth = bool(Config.HUGGINGFACE_ACCESS_TOKEN)
+
+tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME, use_auth_token=use_auth)
+model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME, use_auth_token=use_auth).to(device)
 
 @app.post("/generate-stream")
 async def generate_stream(request: Request):
