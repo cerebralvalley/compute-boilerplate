@@ -15,7 +15,7 @@ from llama_stack.apis.inference.inference import (
     CompletionRequest,
     StopReason,
 )
-from typing import Union
+from typing import Union, AsyncGenerator
 from llama_models.llama3.api.datatypes import interleaved_text_media_as_str
 
 app = FastAPI()
@@ -31,6 +31,29 @@ use_auth = bool(Config.HUGGINGFACE_ACCESS_TOKEN)
 tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME, use_auth_token=use_auth)
 model = AutoModelForCausalLM.from_pretrained(Config.MODEL_NAME, use_auth_token=use_auth).to(device)
 
+async def generate_tokens(input_text: str, max_tokens: int) -> AsyncGenerator[str, None]:
+    """
+    Returns an async generator that just streams tokens from the LLM as they come. The actual logic for inferncing the model is defined here
+    """
+    input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
+    attention_mask = torch.ones_like(input_ids).to(device)
+    past = None
+    
+    for _ in range(max_tokens):
+        with torch.no_grad():
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask, past_key_values=past, use_cache=True)
+            token = outputs.logits[:, -1, :].argmax(dim=-1).to(device)
+            
+            token_str = tokenizer.decode(token.item())
+            yield token_str
+
+            if token.item() == tokenizer.eos_token_id:
+                break
+            
+            input_ids = token.unsqueeze(0)
+            attention_mask = torch.cat([attention_mask, torch.ones_like(input_ids)], dim=-1)
+            past = outputs.past_key_values
+
 @app.post("/inference/completion")
 async def completion(
     request: CompletionRequest
@@ -42,54 +65,19 @@ async def completion(
     max_tokens = min(request.sampling_params.max_tokens or float('inf'), Config.MAX_TOKENS)
 
     if request.stream:
-        async def generate():
-            input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
-            attention_mask = torch.ones_like(input_ids).to(device)
-            past = None
-            
-            for _ in range(max_tokens):
-                with torch.no_grad():
-                    outputs = model(input_ids=input_ids, attention_mask=attention_mask, past_key_values=past, use_cache=True)
-                    token = outputs.logits[:, -1, :].argmax(dim=-1).to(device)
-                    
-                    token_str = tokenizer.decode(token.item())
-                    yield serialize(CompletionResponseStreamChunk(delta=token_str)).encode('utf-8') + b'\n'
-
-                    if token.item() == tokenizer.eos_token:
-                        break
-                    
-                    input_ids = token.unsqueeze(0)
-                    attention_mask = torch.cat([attention_mask, torch.ones_like(input_ids)], dim=-1)
-                    past = outputs.past_key_values
-
-        return StreamingResponse(generate(), media_type="application/json")
+        async def stream_generator():
+            async for token in generate_tokens(input_text, max_tokens):
+                yield serialize(CompletionResponseStreamChunk(delta=token)).encode('utf-8') + b'\n'
+        return StreamingResponse(stream_generator(), media_type="application/json")
     else:
-        input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
-        attention_mask = torch.ones_like(input_ids).to(device)
-        past = None
-        
         output_text = ""
-
-        for _ in range(max_tokens):
-            with torch.no_grad():
-                outputs = model(input_ids=input_ids, attention_mask=attention_mask, past_key_values=past, use_cache=True)
-                token = outputs.logits[:, -1, :].argmax(dim=-1).to(device)
-                
-                token_str = tokenizer.decode(token.item())
-                output_text += token_str
-
-                if token.item() == tokenizer.eos_token:
-                    break
-                
-                input_ids = token.unsqueeze(0)
-                attention_mask = torch.cat([attention_mask, torch.ones_like(input_ids)], dim=-1)
-                past = outputs.past_key_values
-
+        async for token in generate_tokens(input_text, max_tokens):
+            output_text += token
         return CompletionResponse(completion_message={
             "content": output_text,
-            "stop_reason": StopReason.out_of_tokens if _ == max_tokens - 1 else StopReason.end_of_message
+            "stop_reason": StopReason.out_of_tokens if len(output_text) >= max_tokens else StopReason.end_of_message
         })
-    
+
 @app.post("/inference/chat_completion")
 async def chat_completion(
     request: ChatCompletionRequest
@@ -101,53 +89,18 @@ async def chat_completion(
     max_tokens = min(request.sampling_params.max_tokens or float('inf'), Config.MAX_TOKENS)
 
     if request.stream:
-        async def generate():
-            input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
-            attention_mask = torch.ones_like(input_ids).to(device)
-            past = None
-            
-            for _ in range(max_tokens):
-                with torch.no_grad():
-                    outputs = model(input_ids=input_ids, attention_mask=attention_mask, past_key_values=past, use_cache=True)
-                    token = outputs.logits[:, -1, :].argmax(dim=-1).to(device)
-                    
-                    token_str = tokenizer.decode(token.item())
-                    yield serialize(ChatCompletionResponseStreamChunk(event={"event_type": "progress", "delta": token_str})).encode('utf-8') + b'\n'
-
-                    if token.item() == tokenizer.eos_token:
-                        break
-                    
-                    input_ids = token.unsqueeze(0)
-                    attention_mask = torch.cat([attention_mask, torch.ones_like(input_ids)], dim=-1)
-                    past = outputs.past_key_values
-
-        return StreamingResponse(generate(), media_type="application/json")
+        async def stream_generator():
+            async for token in generate_tokens(input_text, max_tokens):
+                yield serialize(ChatCompletionResponseStreamChunk(event={"event_type": "progress", "delta": token})).encode('utf-8') + b'\n'
+        return StreamingResponse(stream_generator(), media_type="application/json")
     else:
-        input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
-        attention_mask = torch.ones_like(input_ids).to(device)
-        past = None
-        
         output_text = ""
-
-        for _ in range(max_tokens):
-            with torch.no_grad():
-                outputs = model(input_ids=input_ids, attention_mask=attention_mask, past_key_values=past, use_cache=True)
-                token = outputs.logits[:, -1, :].argmax(dim=-1).to(device)
-                
-                token_str = tokenizer.decode(token.item())
-                output_text += token_str
-
-                if token.item() == tokenizer.eos_token:
-                    break
-                
-                input_ids = token.unsqueeze(0)
-                attention_mask = torch.cat([attention_mask, torch.ones_like(input_ids)], dim=-1)
-                past = outputs.past_key_values
-
+        async for token in generate_tokens(input_text, max_tokens):
+            output_text += token
         return ChatCompletionResponse(completion_message={
             "role": "assistant",
             "content": output_text,
-            "stop_reason": StopReason.out_of_tokens if _ == max_tokens - 1 else StopReason.end_of_message
+            "stop_reason": StopReason.out_of_tokens if len(output_text) >= max_tokens else StopReason.end_of_message
         })
 
 if __name__ == "__main__":

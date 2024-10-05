@@ -126,5 +126,5 @@ def chat_completion(messages, max_tokens=None):
 if __name__ == "__main__":
     # completion_stream("Hello, how are you?")
     completion("What is the capital of France?")
-    # chat_completion_stream([{"role": "user", "content": "What's the capital of France?"}])
-    # chat_completion([{"role": "user", "content": "What's the weather like today?"}])
+    chat_completion_stream([{"role": "user", "content": "What's the capital of France?"}])
+    chat_completion([{"role": "user", "content": "What's the weather like today?"}])
