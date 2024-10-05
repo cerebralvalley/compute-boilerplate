@@ -106,11 +106,13 @@ def check_system_resources(model_name):
 
     if estimated_size > available_disk_space:
         raise ValueError(f"Estimated model size ({estimated_size:.2f} GB) exceeds available disk space ({available_disk_space:.2f} GB). Refusing to download model.")
-
+    
     if available_vram > 0 and estimated_size > available_vram:
         raise ValueError(f"Estimated model size ({estimated_size:.2f} GB) exceeds available GPU memory ({available_vram:.2f} GB). Refusing to download model.")
     elif available_vram == 0 and estimated_size > available_memory:
         raise ValueError(f"Estimated model size ({estimated_size:.2f} GB) exceeds available system memory ({available_memory:.2f} GB). Refusing to download model.")
+    
+    print("System requirements estimate check passed. Proceeding to ensure model feasibility...")
 
     model = AutoModelForCausalLM.from_pretrained(model_name)
     model_size = calculate_model_size(model)
