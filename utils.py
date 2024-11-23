@@ -20,7 +20,7 @@ def serialize(request: BaseModel) -> str:
             return super().default(obj)
     return json.dumps(request.model_dump(), cls=EnumEncoder)
 
-def estimate_model_size(model_name):
+def estimate_model_size(model_name) -> int:
     """
     Estimates the model size with the model's name, considering different precisions.
     Uses the model's configuration file to get the number of parameters.
@@ -28,22 +28,26 @@ def estimate_model_size(model_name):
     if Config.HUGGINGFACE_ACCESS_TOKEN:
         login(token=Config.HUGGINGFACE_ACCESS_TOKEN)
 
-    info = model_info(model_name)
-    tensor_params = info.safetensors.parameters
-    total_bytes = 0
-    for key, value in tensor_params.items():
-        if '32' in key:
-            total_bytes += value * 4  # 32-bit float
-        elif '16' in key:
-            total_bytes += value * 2  # 16-bit float
-        elif '8' in key:
-            total_bytes += value  # 8-bit integer
-        elif '4' in key:
-            total_bytes += value / 2  # 4-bit integer
-        else:
-            total_bytes += value * 4  # default to 32-bit float if precision is not specified
-    estimated_size_gb = total_bytes / (1024 ** 3)
-    return estimated_size_gb
+    try:
+        info = model_info(model_name)
+        tensor_params = info.safetensors.parameters
+        total_bytes = 0
+        for key, value in tensor_params.items():
+            if '32' in key:
+                total_bytes += value * 4  # 32-bit float
+            elif '16' in key:
+                total_bytes += value * 2  # 16-bit float
+            elif '8' in key:
+                total_bytes += value  # 8-bit integer
+            elif '4' in key:
+                total_bytes += value / 2  # 4-bit integer
+            else:
+                total_bytes += value * 4  # default to 32-bit float if precision is not specified
+        estimated_size_gb = total_bytes / (1024 ** 3)
+        return estimated_size_gb
+    except Exception as e:
+        print(f"Error estimating model size: {str(e)}. Continuing naively...")
+        return 0
 
 def calculate_model_size(model) -> float:
     """
