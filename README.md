@@ -6,7 +6,7 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
 2. Install all dependencies with `pip3 install -r requirements.txt`.
 3. Edit `config.py` to your desired configuration.
 4. Ensure that the API's port is open on your machine. If you're running on a Nebius machine, this port should already be open. If you're running on AWS, you will need to manually whitelist the port. 
-5. If your Huggingface model you want to inference is access gated (check the huggingface model card, for example Llama and Mistral models are gated), ensure you pass in a token in `.env` to allow authentication. Your token should be fine grained to allow access to gated repositories.
+5. Some models require an agreement, waiver, or form on Huggingface to access. If your Huggingface model you want to inference is access gated (***check the huggingface model card***, for example Llama and Mistral models are gated), ensure you pass in a token in `.env` to allow authentication. Your token should be fine grained to allow access to gated repositories.
 6. Run `python3 main.py` to download the model and start the endpoint (*NOTE: downloading the LLM, depending on the size, may take a while*).
 
 # Current Features
