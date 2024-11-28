@@ -68,3 +68,4 @@ Note: Replace `/path/to/your/keys/folder/KEY_NAME`, `username`, and `server_ip` 
 # TODOs:
 * fine tuning support
 * .gguf support
+* use ollama instead of native huggingface integration?
