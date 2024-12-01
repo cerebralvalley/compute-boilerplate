@@ -39,6 +39,10 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
     * **Before the server starts, a check will be made to ensure this is the case**
     * Huggingface first downloads the weights to disk in a cache folder, which is then loaded into memory upon inference with the `.to(device)` function
     * If you run out of disk space on accident, huggingface downloads (on UNIX systems) to `~/.cache/huggingface/hub` that you can clear
+* I looked into using Ollama instead of writing a custom stack
+  * Ollama only supports a few whitelisted models, not open to all of huggingface
+  * No fine tuning support either
+  * Not compatible with llama stack, would have to wrap it
 
 # SSH Commands
 If you're using a virtual machine, here are some helpful SSH commands to get you started.
@@ -68,4 +72,3 @@ Note: Replace `/path/to/your/keys/folder/KEY_NAME`, `username`, and `server_ip` 
 # TODOs:
 * fine tuning support
 * .gguf support
-* use ollama instead of native huggingface integration?
