@@ -16,9 +16,11 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
     * `/inference/completion`
         * Endpoint that generates a completion response
         * Supports both streaming and non-streaming modes
+        * Multimodal inputs supported!
     * `/inference/chat_completion`
         * Endpoint that generates a chat completion response
         * Supports both streaming and non-streaming modes
+        * Multimodal inputs supported!
 
 # Default Technical Implementations
 * Inference:
@@ -33,7 +35,7 @@ Turn any machine into a suite of inference and tuning endpoints for Huggingface 
 # Notes and Considerations
 * You can inference each endpoint locally in `use.py` to ensure proper functionality and testing!
 * We use a CUDA GPU if it's available, otherwise defaults to the CPU
-* In `scripts/setup/sh`, we've provided a script to setup and install all necessary dependencies
+* In `scripts/setup.sh`, we've provided a script to setup and install all necessary dependencies
 * Some models require an agreement or signature to access. For these models, please sign the access documents on the model's page, and then input your Huggingface Access Token in `.env` to override this
 * To download and inference models, we need BOTH sufficient *disk* and *memory* space
     * **Before the server starts, a check will be made to ensure this is the case**

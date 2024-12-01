@@ -8,6 +8,7 @@ from llama_stack.apis.inference.inference import (
 )
 from utils import serialize
 import json
+from llama_models.llama3.api.datatypes import ImageMedia, URL
 
 default_url = f"http://localhost:{Config.PORT}"
 
@@ -123,8 +124,41 @@ def chat_completion(messages, max_tokens=None):
         print(f"Error: {response.status_code}")
         print(response.text)
 
+def completion_multimodal(content, image_url):
+    """
+    Completion endpoint using a reference image to show how to use multimodal inference!
+    Tested with nlpconnect/vit-gpt2-image-captioning.
+    """    
+    completion_request = CompletionRequest(
+        model=Config.MODEL_NAME,
+        content=[
+            content,
+            ImageMedia(image=URL(uri=image_url))
+        ],
+        sampling_params=SamplingParams(max_tokens=100).model_dump(),
+        stream=False
+    )
+    
+    response = requests.post(
+        f"http://localhost:{Config.PORT}/inference/completion",
+        data=serialize(completion_request),
+        headers={'Content-Type': 'application/json'}
+    )
+    
+    if response.status_code == 200:
+        print("Response:")
+        print(response.text)
+        input()
+        response_data = response.json()
+        generated_text = response_data.get("completion_message", {}).get("content", "")
+        print(generated_text)
+    else:
+        print(f"Error: {response.status_code}")
+        print(response.text)
+
 if __name__ == "__main__":
     # completion_stream("I love you")
-    completion("What is the capital of France?")
-    # chat_completion_stream([{"role": "user", "content": "What's the capital of France?"}])
-    # chat_completion([{"role": "user", "content": "What's the weather like today?"}])
+    # completion("What is the capital of France?")
+    chat_completion_stream([{"role": "user", "content": "What's the capital of France?"}])
+    # chat_completion([{"role": "user", "content": "How can I find a derivative of a function?"}])
+    # completion_multimodal("What time is it?:", "https://m.media-amazon.com/images/I/81nUFx9sXoL.jpg")
